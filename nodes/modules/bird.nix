@@ -58,6 +58,15 @@ in
             if net.len > 25 then accept;
             reject;
           };
+
+          # Do not import/export routes for node well-known virtual IPs, e.g.
+          #   forbid ip r a 172.16.0.10/32 dev teng{0,1} src <virtip>
+          import filter {
+            if net ~ [ 172.16.0.0/23+, 172.16.2.0/23+, 172.19.0.0/23+ ] && net.len = 32 && (ifname = "teng0" || ifname = "teng1") then
+              reject;
+            else
+              accept;
+          }
         '';
       };
       protocol.bfd = {
