@@ -3,18 +3,6 @@ with lib;
 
 let
   cfg = config.node.net;
-  kernelProto = {
-      learn = true;
-      persist = true;
-      extraConfig = ''
-        export all;
-        import all;
-        import filter {
-          if net.len > 25 then accept;
-          reject;
-        };
-      '';
-    };
   bgpNeighborOpts = { lib, pkgs, ... }: {
     options = {
       v4 = mkOption {
@@ -58,7 +46,20 @@ in
     networking.bird = {
       enable = true;
       routerId = cfg.routerId;
-      protocol.kernel = kernelProto;
+      protocol.kernel= {
+        learn = true;
+        persist = true;
+        extraConfig = ''
+          export all;
+          import all;
+
+          # TODO: what is this filter for?
+          import filter {
+            if net.len > 25 then accept;
+            reject;
+          };
+        '';
+      };
       protocol.bfd = {
         enable = cfg.bfdInterfaces != "";
         interfaces."${cfg.bfdInterfaces}" = {};
@@ -88,7 +89,14 @@ in
     networking.bird6 = {
       enable = true;
       routerId = cfg.routerId;
-      protocol.kernel = kernelProto;
+      protocol.kernel= {
+        learn = true;
+        persist = true;
+        extraConfig = ''
+          export all;
+          import all;
+        '';
+      };
       protocol.bfd = {
         enable = cfg.bfdInterfaces != "";
         interfaces."${cfg.bfdInterfaces}" = {};
